@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Header } from "@/components/layout/Header";
 import { motion } from "framer-motion";
@@ -13,8 +14,23 @@ import {
   ChevronRight,
   Plus,
 } from "lucide-react";
+import { CreateJobModal } from "@/components/jobs/CreateJobModal";
+import { JobDetailModal } from "@/components/jobs/JobDetailModal";
 
-const jobs = [
+interface Job {
+  id: string;
+  title: string;
+  department: string;
+  location: string;
+  type: string;
+  salary: string;
+  openings: number;
+  posted: string;
+  status: string;
+  description?: string;
+}
+
+const initialJobs: Job[] = [
   {
     id: "job-001",
     title: "Senior Software Engineer",
@@ -84,7 +100,15 @@ const jobs = [
 ];
 
 const Jobs = () => {
+  const [jobs, setJobs] = useState<Job[]>(initialJobs);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+
   const totalOpenings = jobs.reduce((sum, job) => sum + job.openings, 0);
+
+  const handleCreateJob = (newJob: Job) => {
+    setJobs([newJob, ...jobs]);
+  };
 
   return (
     <AppLayout>
@@ -152,7 +176,11 @@ const Jobs = () => {
           <p className="text-sm text-muted-foreground">
             Showing {jobs.length} active positions
           </p>
-          <Button size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground">
+          <Button
+            size="sm"
+            className="bg-accent hover:bg-accent/90 text-accent-foreground"
+            onClick={() => setCreateModalOpen(true)}
+          >
             <Plus className="w-4 h-4 mr-2" />
             Create Position
           </Button>
@@ -165,7 +193,7 @@ const Jobs = () => {
               key={job.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
             >
               <Card className="glass-card hover:shadow-elegant transition-all duration-300 cursor-pointer group">
                 <CardHeader className="pb-3">
@@ -207,6 +235,7 @@ const Jobs = () => {
                       variant="ghost"
                       size="sm"
                       className="text-accent hover:text-accent/80"
+                      onClick={() => setSelectedJob(job)}
                     >
                       View
                       <ChevronRight className="w-4 h-4 ml-1" />
@@ -218,6 +247,21 @@ const Jobs = () => {
           ))}
         </div>
       </div>
+
+      {/* Modals */}
+      <CreateJobModal
+        open={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        onSave={handleCreateJob}
+      />
+
+      {selectedJob && (
+        <JobDetailModal
+          job={selectedJob}
+          open={!!selectedJob}
+          onClose={() => setSelectedJob(null)}
+        />
+      )}
     </AppLayout>
   );
 };
